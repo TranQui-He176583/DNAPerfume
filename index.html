@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Perfume - Your Scent Identity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              serif: ['"Playfair Display"', 'serif'],
+              sans: ['"Lato"', 'sans-serif'],
+            },
+            colors: {
+              brand: {
+                50: '#fdf8f6',
+                100: '#f2e8e5',
+                500: '#a67c52',
+                800: '#4a403a',
+                900: '#2b2623',
+              }
+            },
+            animation: {
+              'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+            },
+            keyframes: {
+              fadeInUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'Lato', sans-serif;
+        background-color: #fdf8f6;
+        color: #2b2623;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        font-family: 'Playfair Display', serif;
+      }
+      .view { display: none; }
+      .view.active { display: block; }
+      
+      /* Simple bar chart styles */
+      .chart-bar-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+      .chart-label {
+        width: 100px;
+        font-size: 0.875rem;
+        text-align: right;
+        padding-right: 10px;
+      }
+      .chart-bar-bg {
+        flex-grow: 1;
+        background-color: #f3f4f6;
+        height: 1.5rem;
+        border-radius: 9999px;
+        overflow: hidden;
+      }
+      .chart-bar-fill {
+        height: 100%;
+        background-color: #a67c52;
+        transition: width 1s ease-out;
+      }
+      .chart-value {
+        width: 40px;
+        padding-left: 10px;
+        font-size: 0.875rem;
+        font-weight: bold;
+      }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://esm.sh/@google/genai@^1.39.0"
+      }
+    }
+    </script>
+</head>
+<body>
+    <div id="app">
+        <!-- Navbar -->
+        <nav class="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-brand-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <div class="flex items-center gap-2 cursor-pointer" id="nav-logo">
+                        <i data-lucide="dna" class="w-8 h-8 text-brand-900"></i>
+                        <span class="font-serif text-2xl font-bold tracking-tighter text-brand-900">ScentDNA</span>
+                    </div>
+                    <div class="flex items-center gap-6">
+                        <button id="nav-home" class="text-sm uppercase tracking-widest hover:text-brand-500 transition-colors hidden md:block">Trang Chủ</button>
+                        <button id="nav-collection" class="text-sm uppercase tracking-widest hover:text-brand-500 transition-colors hidden md:block">Bộ Sưu Tập</button>
+                        <div id="user-section">
+                            <!-- User info or Login button injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="pt-20 min-h-screen">
+            
+            <!-- HOME VIEW -->
+            <div id="view-home" class="view active">
+                <div class="relative">
+                    <div class="absolute inset-0 z-0">
+                        <img 
+                        src="https://images.unsplash.com/photo-1595425239556-32d54e601552?auto=format&fit=crop&q=80&w=2000" 
+                        alt="Perfume Lab" 
+                        class="w-full h-screen object-cover opacity-20 grayscale"
+                        />
+                        <div class="absolute inset-0 bg-gradient-to-b from-brand-50/50 to-brand-50/90"></div>
+                    </div>
+                    
+                    <div class="relative z-10 max-w-4xl mx-auto pt-32 px-4 text-center">
+                        <h1 class="text-5xl md:text-7xl font-serif text-brand-900 mb-6 leading-tight">
+                        Khám Phá <br/>
+                        <span class="text-brand-500 italic">DNA Mùi Hương Của Bạn</span>
+                        </h1>
+                        <p class="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+                        Thông qua các thuật toán phân tích tâm lý chuyên sâu và công nghệ AI, chúng tôi giải mã cá tính của bạn để tạo ra một mùi hương độc bản, không thể nhầm lẫn.
+                        </p>
+                        <button 
+                        id="btn-start-survey"
+                        class="bg-brand-900 text-white px-10 py-4 text-lg tracking-widest uppercase hover:bg-brand-800 transition-all transform hover:scale-105 shadow-xl flex items-center mx-auto gap-3"
+                        >
+                        <i data-lucide="test-tube" class="w-5 h-5"></i>
+                        Bắt Đầu Phân Tích
+                        </button>
+
+                        <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div class="bg-white/50 backdrop-blur p-6 border border-brand-100 shadow-sm">
+                                <h3 class="font-serif text-lg font-bold mb-2">Hồ Sơ Cá Tính</h3>
+                                <p class="text-sm text-gray-500">Bộ câu hỏi tâm lý học có trọng số để phân tích đặc điểm của bạn.</p>
+                            </div>
+                            <div class="bg-white/50 backdrop-blur p-6 border border-brand-100 shadow-sm">
+                                <h3 class="font-serif text-lg font-bold mb-2">Sáng Tạo Cùng AI</h3>
+                                <p class="text-sm text-gray-500">Gemini AI chuyển đổi đặc điểm tính cách thành cấu trúc phân tử mùi hương.</p>
+                            </div>
+                            <div class="bg-white/50 backdrop-blur p-6 border border-brand-100 shadow-sm">
+                                <h3 class="font-serif text-lg font-bold mb-2">Pha Chế Thủ Công</h3>
+                                <p class="text-sm text-gray-500">Được pha chế bởi các chuyên gia nước hoa hàng đầu theo công thức của riêng bạn.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AUTH VIEW (LOGIN) -->
+            <div id="view-auth" class="view">
+                <div class="flex items-center justify-center min-h-[80vh]">
+                    <div class="bg-white p-10 shadow-2xl max-w-md w-full border-t-4 border-black">
+                        <h2 class="font-serif text-3xl mb-2 text-center text-black">Đăng Nhập</h2>
+                        <p class="text-center text-black mb-8 text-sm font-medium">Truy cập Thư viện DNA Mùi Hương của bạn</p>
+                        <form id="auth-form" class="space-y-6">
+                        <div>
+                            <label class="block text-xs uppercase tracking-widest text-black font-bold mb-2">Email</label>
+                            <input type="email" required class="w-full p-3 bg-white border border-black focus:border-brand-500 outline-none transition-colors text-black placeholder:text-gray-400" placeholder="ban@example.com" />
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase tracking-widest text-black font-bold mb-2">Mật khẩu</label>
+                            <input type="password" required class="w-full p-3 bg-white border border-black focus:border-brand-500 outline-none transition-colors text-black placeholder:text-gray-400" placeholder="••••••••" />
+                        </div>
+                        <button type="submit" class="w-full bg-black text-white py-4 uppercase tracking-widest hover:bg-gray-900 transition-colors font-bold">
+                            Đăng Nhập
+                        </button>
+                        </form>
+                        <div class="mt-6 text-center space-y-2">
+                            <p class="text-xs text-gray-600">Chưa có tài khoản? <button id="btn-go-register" class="text-black font-bold hover:text-brand-500 underline">Đăng ký ngay</button></p>
+                            <button id="btn-back-home" class="text-xs text-black hover:text-brand-500 underline font-bold">Quay về trang chủ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REGISTER VIEW -->
+            <div id="view-register" class="view">
+                <div class="flex items-center justify-center min-h-[80vh]">
+                    <div class="bg-white p-10 shadow-2xl max-w-md w-full border-t-4 border-brand-500">
+                        <h2 class="font-serif text-3xl mb-2 text-center text-black">Đăng Ký</h2>
+                        <p class="text-center text-black mb-8 text-sm font-medium">Tạo hồ sơ mùi hương của riêng bạn</p>
+                        <form id="register-form" class="space-y-6">
+                        <div>
+                            <label class="block text-xs uppercase tracking-widest text-black font-bold mb-2">Họ và tên</label>
+                            <input type="text" required class="w-full p-3 bg-white border border-black focus:border-brand-500 outline-none transition-colors text-black placeholder:text-gray-400" placeholder="Nguyễn Văn A" />
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase tracking-widest text-black font-bold mb-2">Email</label>
+                            <input type="email" required class="w-full p-3 bg-white border border-black focus:border-brand-500 outline-none transition-colors text-black placeholder:text-gray-400" placeholder="ban@example.com" />
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase tracking-widest text-black font-bold mb-2">Mật khẩu</label>
+                            <input type="password" required class="w-full p-3 bg-white border border-black focus:border-brand-500 outline-none transition-colors text-black placeholder:text-gray-400" placeholder="••••••••" />
+                        </div>
+                        <button type="submit" class="w-full bg-brand-900 text-white py-4 uppercase tracking-widest hover:bg-brand-800 transition-colors font-bold">
+                            Đăng Ký
+                        </button>
+                        </form>
+                        <div class="mt-6 text-center space-y-2">
+                            <p class="text-xs text-gray-600">Đã có tài khoản? <button id="btn-go-login" class="text-black font-bold hover:text-brand-500 underline">Đăng nhập</button></p>
+                            <button id="btn-back-home-reg" class="text-xs text-black hover:text-brand-500 underline font-bold">Quay về trang chủ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SURVEY VIEW -->
+            <div id="view-survey" class="view">
+                <div class="max-w-3xl mx-auto px-4 py-12">
+                    <!-- Progress Bar -->
+                    <div class="mb-12">
+                        <div class="flex justify-between text-xs uppercase tracking-widest mb-2 text-gray-500">
+                            <span>Tiến độ phân tích</span>
+                            <span id="survey-progress-text">0%</span>
+                        </div>
+                        <div class="h-1 bg-gray-200 w-full">
+                            <div id="survey-progress-bar" class="h-full bg-brand-900 transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Questions Container -->
+                    <div id="questions-container" class="space-y-12">
+                        <!-- Questions injected here -->
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-12 flex justify-center pb-20">
+                        <button id="btn-finish-stage" class="bg-brand-900 text-white px-12 py-4 text-lg tracking-widest uppercase hover:bg-brand-800 transition-all shadow-xl flex items-center gap-3 hidden">
+                            <span>Hoàn Tất Giai Đoạn</span>
+                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </button>
+                        <div id="loading-ai" class="hidden flex flex-col items-center">
+                            <i data-lucide="loader-2" class="w-8 h-8 animate-spin text-brand-500 mb-2"></i>
+                            <span class="text-sm uppercase tracking-widest text-gray-500">AI đang phân tích DNA của bạn...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULTS VIEW -->
+            <div id="view-results" class="view">
+                <div class="max-w-6xl mx-auto px-4 py-12">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                        <!-- Left Column: AI Analysis -->
+                        <div class="space-y-8 animate-fade-in-up">
+                            <div class="border-b border-black pb-4">
+                                <h2 class="font-serif text-4xl text-brand-900 mb-2">Hồ Sơ Mùi Hương</h2>
+                                <p class="text-sm uppercase tracking-widest text-gray-500" id="result-date">DATE: --/--/----</p>
+                            </div>
+
+                            <div class="bg-white p-8 border border-brand-100 shadow-sm">
+                                <h3 class="font-serif text-xl mb-4 flex items-center gap-2">
+                                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                                    Phân Tích Tính Cách
+                                </h3>
+                                <p class="text-gray-600 italic leading-relaxed" id="result-personality">
+                                    Loading...
+                                </p>
+                            </div>
+
+                            <div class="bg-white p-8 border border-brand-100 shadow-sm">
+                                <h3 class="font-serif text-xl mb-6 flex items-center gap-2">
+                                    <i data-lucide="dna" class="w-5 h-5"></i>
+                                    Cấu Trúc DNA Mùi Hương
+                                </h3>
+                                
+                                <div class="space-y-6" id="result-notes">
+                                    <!-- Note Charts injected here -->
+                                </div>
+                            </div>
+
+                            <div class="bg-brand-50 p-6 border border-brand-100">
+                                <h4 class="font-bold text-sm uppercase tracking-widest mb-2">Tại sao là công thức này?</h4>
+                                <p class="text-sm text-gray-600" id="result-reasoning">Loading...</p>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Product Match -->
+                        <div class="lg:border-l lg:border-gray-200 lg:pl-16 space-y-8 animate-fade-in-up" style="animation-delay: 0.2s">
+                            <div class="text-center mb-8">
+                                <span class="inline-block bg-black text-white text-xs font-bold px-3 py-1 uppercase tracking-widest mb-4">Top Picks</span>
+                                <h2 class="font-serif text-3xl text-brand-900 mb-2">Gợi Ý Từ Bộ Sưu Tập</h2>
+                                <p class="text-gray-500">3 mùi hương phù hợp nhất với DNA của bạn</p>
+                            </div>
+
+                            <div id="matches-container" class="space-y-6">
+                                <!-- Matches injected here -->
+                            </div>
+
+                            <div class="border-t border-gray-200 pt-8 text-center" id="continue-survey-container">
+                                <p class="text-gray-500 mb-4">Muốn độ chính xác cao hơn?</p>
+                                <button id="btn-continue-survey" class="text-brand-900 font-bold border-b-2 border-brand-900 pb-1 hover:text-brand-500 hover:border-brand-500 transition-colors">
+                                    Tiếp tục giai đoạn phân tích tiếp theo &rarr;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLLECTION VIEW -->
+            <div id="view-collection" class="view">
+                <div class="max-w-6xl mx-auto px-4 py-12">
+                    <div class="text-center mb-12">
+                        <h2 class="font-serif text-4xl text-brand-900 mb-4">Bộ Sưu Tập Của Bạn</h2>
+                        <p class="text-gray-600 max-w-2xl mx-auto">Lưu giữ những công thức mùi hương độc bản và các sản phẩm yêu thích.</p>
+                    </div>
+                    
+                    <div id="collection-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <!-- Collection items injected here -->
+                    </div>
+                    
+                    <div id="empty-collection" class="hidden text-center py-20">
+                        <i data-lucide="flask-conical" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+                        <p class="text-gray-500 mb-6">Bạn chưa lưu công thức nào.</p>
+                        <button id="btn-start-survey-collection" class="bg-brand-900 text-white px-8 py-3 uppercase tracking-widest hover:bg-brand-800 transition-colors">
+                            Bắt Đầu Phân Tích Ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-24 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/50 z-[60] hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded shadow-xl max-w-sm w-full mx-4">
+            <h3 class="font-serif text-xl font-bold mb-2">Xác nhận xóa</h3>
+            <p class="text-gray-600 mb-6 text-sm">Bạn có chắc chắn muốn xóa công thức này khỏi bộ sưu tập không?</p>
+            <div class="flex justify-end gap-3">
+                <button id="btn-confirm-cancel" class="px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded uppercase tracking-wider">Hủy</button>
+                <button id="btn-confirm-delete" class="px-4 py-2 text-sm font-bold bg-red-500 text-white hover:bg-red-600 rounded uppercase tracking-wider">Xóa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Config (API Key) -->
+    <script src="/config.js"></script>
+    <!-- Main App Logic -->
+    <script type="module" src="/js/app.js"></script>
+</body>
+</html>
