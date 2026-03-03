@@ -104,6 +104,14 @@ function navigateTo(viewName) {
     } else if (viewName === 'COLLECTION') {
         renderCollection();
     }
+
+    // Google Analytics Tracking
+    if (typeof gtag === 'function') {
+        gtag('event', 'page_view', {
+            page_title: viewName,
+            page_path: '/' + viewName.toLowerCase()
+        });
+    }
 }
 
 // User Logic
