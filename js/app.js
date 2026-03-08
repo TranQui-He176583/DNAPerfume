@@ -23,7 +23,8 @@ const views = {
     REGISTER: document.getElementById('view-register'),
     SURVEY: document.getElementById('view-survey'),
     RESULTS: document.getElementById('view-results'),
-    COLLECTION: document.getElementById('view-collection')
+    COLLECTION: document.getElementById('view-collection'),
+    ABOUT: document.getElementById('view-about')
 };
 
 const userSection = document.getElementById('user-section');
@@ -40,11 +41,11 @@ const confirmModal = document.getElementById('confirm-modal'); // Modal element
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
-    
+
     // Icon based on type
     let icon = 'check-circle';
     let bgColor = 'bg-green-500';
-    
+
     if (type === 'error') {
         icon = 'alert-circle';
         bgColor = 'bg-red-500';
@@ -79,7 +80,7 @@ function showToast(message, type = 'success') {
 // Navigation
 function navigateTo(viewName) {
     state.currentView = viewName;
-    
+
     // Hide all views
     Object.values(views).forEach(el => {
         if (el) {
@@ -87,7 +88,7 @@ function navigateTo(viewName) {
             el.classList.add('hidden'); // Ensure hidden class is applied
         }
     });
-    
+
     // Show target view
     const target = views[viewName];
     if (target) {
@@ -97,7 +98,7 @@ function navigateTo(viewName) {
 
     // Refresh icons
     lucide.createIcons();
-    
+
     // Specific view logic
     if (viewName === 'SURVEY') {
         renderSurvey();
@@ -144,7 +145,7 @@ function updateUserUI() {
 function renderSurvey() {
     const startQuestionIndex = state.survey.currentStage * QUESTIONS_PER_STAGE;
     const currentQuestions = MOCK_QUESTIONS.slice(startQuestionIndex, startQuestionIndex + QUESTIONS_PER_STAGE);
-    
+
     // Update Progress
     const progress = Math.round((startQuestionIndex / TOTAL_QUESTIONS) * 100);
     surveyProgressBar.style.width = `${progress}%`;
@@ -193,7 +194,7 @@ function renderSurvey() {
 function handleAnswer(questionId, questionText, selectedOption, weight) {
     // Remove old answer for this question
     state.survey.answers = state.survey.answers.filter(a => a.questionId !== questionId);
-    
+
     // Add new answer
     state.survey.answers.push({
         questionId,
@@ -227,10 +228,10 @@ function handleAnswer(questionId, questionText, selectedOption, weight) {
 function checkStageCompletion(currentQuestions) {
     // Get all answered Question IDs
     const answeredIds = new Set(state.survey.answers.map(a => a.questionId));
-    
+
     // Check if every current question ID is in the answered set
     const isStageComplete = currentQuestions.length > 0 && currentQuestions.every(q => answeredIds.has(q.id));
-    
+
     const btn = document.getElementById('btn-finish-stage');
     if (btn) {
         if (isStageComplete) {
@@ -244,7 +245,7 @@ function checkStageCompletion(currentQuestions) {
 async function finishStage() {
     console.log("Starting finishStage...");
     btnFinishStage.classList.add('hidden');
-    
+
     // Show loading briefly to indicate processing is happening
     loadingAi.classList.remove('hidden');
     state.survey.isLoadingAI = true;
@@ -257,20 +258,20 @@ async function finishStage() {
         // Call Gemini (or Mock if no key/error)
         const analysis = await analyzePersonalityAndRecommend(state.survey.answers);
         console.log("Analysis result:", analysis);
-        
+
         // Call Mock Match
         const bestMatches = findBestMatchPerfumes(analysis.scentProfile);
         console.log("Best matches:", bestMatches);
 
         state.survey.lastAnalysis = analysis;
         state.survey.bestMatches = bestMatches;
-        
+
         renderResults();
         navigateTo('RESULTS');
     } catch (error) {
         console.error("Error in finishStage:", error);
         showToast("Đã xảy ra lỗi phân tích. Vui lòng thử lại.", "error");
-        btnFinishStage.classList.remove('hidden'); 
+        btnFinishStage.classList.remove('hidden');
     } finally {
         // Always ensure loading is hidden
         state.survey.isLoadingAI = false;
@@ -296,7 +297,7 @@ function renderResults() {
     // Notes Charts
     const notesContainer = document.getElementById('result-notes');
     notesContainer.innerHTML = '';
-    
+
     ['top', 'heart', 'base'].forEach(layer => {
         const layerNotes = lastAnalysis.scentProfile[layer];
         if (layerNotes && layerNotes.length > 0) {
@@ -332,7 +333,7 @@ function renderResults() {
             <div class="flex-1 min-w-0">
                 <div class="flex justify-between items-start mb-1">
                     <h3 class="font-serif text-lg font-bold text-brand-900 leading-tight truncate pr-2">${match.name}</h3>
-                    <span class="font-serif text-md font-medium whitespace-nowrap">$${match.price}</span>
+                    <span class="font-serif text-md font-medium whitespace-nowrap">${match.price.toLocaleString('vi-VN')} VNĐ</span>
                 </div>
                 <p class="text-xs text-gray-500 uppercase tracking-widest mb-2">Match Score: ${match.matchScore || 'High'}</p>
                 <p class="text-sm text-gray-600 mb-3 line-clamp-2 leading-snug">
@@ -355,8 +356,8 @@ function renderResults() {
     // Attach listeners for order buttons
     document.querySelectorAll('.btn-order').forEach(btn => {
         btn.addEventListener('click', (e) => {
-             const url = e.currentTarget.dataset.url;
-             window.open(url, '_blank');
+            const url = e.currentTarget.dataset.url;
+            window.open(url, '_blank');
         });
     });
 
@@ -378,7 +379,7 @@ function renderResults() {
     } else {
         continueContainer.classList.add('hidden');
     }
-    
+
     lucide.createIcons();
 }
 
@@ -431,7 +432,7 @@ function renderCollection() {
             </div>
         </div>
     `}).join('');
-    
+
     // Attach listeners for view detail buttons
     document.querySelectorAll('.btn-view-detail').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -459,16 +460,16 @@ function handleViewDetail(formulaId) {
 
     // Restore analysis state
     state.survey.lastAnalysis = formula.analysis;
-    
+
     // Find the saved product details
     const savedProduct = MOCK_PERFUMES.find(p => p.id === formula.bestMatchId);
-    
+
     // Set bestMatches to just the saved product (or empty array if not found)
     state.survey.bestMatches = savedProduct ? [savedProduct] : [];
 
     // Render results view
     renderResults();
-    
+
     // Update UI to show this is a saved result (optional: hide "Save" button or change title)
     // For now, we just navigate
     navigateTo('RESULTS');
@@ -489,7 +490,7 @@ async function executeDeleteFormula() {
     state.formulaToDelete = null;
 
     console.log("Proceeding to delete:", formulaId);
-    
+
     try {
         const result = await deleteSurveyResult(state.user.id, formulaId);
         console.log("API Response:", result);
@@ -515,15 +516,15 @@ async function handleSaveResult(match) {
         navigateTo('AUTH');
         return;
     }
-    
+
     if (!state.survey.lastAnalysis || !match) return;
 
     // Check for duplicates
     // We consider it a duplicate if the same user saves the same perfume match from the same analysis session
     // Since we don't have a session ID, we can compare the analysis object content or just check if this perfume is already saved recently with same notes.
     // A simple check: Does the user already have this perfume saved with the exact same personality summary?
-    const isDuplicate = state.user.savedFormulas.some(f => 
-        f.bestMatchId === match.id && 
+    const isDuplicate = state.user.savedFormulas.some(f =>
+        f.bestMatchId === match.id &&
         f.analysis.personalitySummary === state.survey.lastAnalysis.personalitySummary
     );
 
@@ -551,6 +552,7 @@ function setupEventListeners() {
     // Nav
     document.getElementById('nav-logo').addEventListener('click', () => navigateTo('HOME'));
     document.getElementById('nav-home').addEventListener('click', () => navigateTo('HOME'));
+    document.getElementById('nav-about').addEventListener('click', () => navigateTo('ABOUT'));
     document.getElementById('nav-collection').addEventListener('click', () => {
         if (!state.user) {
             showToast("Vui lòng đăng nhập để xem bộ sưu tập.", "info");
@@ -559,7 +561,7 @@ function setupEventListeners() {
             navigateTo('COLLECTION');
         }
     });
-    
+
     // Home
     document.getElementById('btn-start-survey').addEventListener('click', () => {
         if (!state.user) {
@@ -667,12 +669,108 @@ function setupEventListeners() {
     });
 }
 
+// Latest Collection Carousel Logic
+let currentCollectionIndex = 0;
+const ITEMS_PER_PAGE = 3;
+
+function renderLatestCollection() {
+    const container = document.getElementById('latest-collection-grid');
+    const btnPrev = document.getElementById('btn-prev-collection');
+    const btnNext = document.getElementById('btn-next-collection');
+
+    if (!container || !btnPrev || !btnNext) return;
+
+    // Get all perfumes
+    const latestPerfumes = MOCK_PERFUMES;
+    const totalPages = Math.ceil(latestPerfumes.length / ITEMS_PER_PAGE);
+
+    // Render all items in a horizontal flex row
+    container.innerHTML = latestPerfumes.map(perfume => {
+        // Infer category
+        const category = perfume.notes && perfume.notes.top && perfume.notes.base
+            ? `${perfume.notes.top[0]} • ${perfume.notes.base[0]}`
+            : 'Signature Scent';
+
+        return `
+            <div class="w-full md:w-1/3 flex-shrink-0 px-4">
+                <div class="group cursor-pointer h-full flex flex-col items-center" onclick="window.open('${perfume.productUrl}', '_blank')">
+                    <div class="relative overflow-hidden mb-6 bg-gray-50 aspect-[2/3] w-full rounded-[2rem] shadow-sm hover:shadow-2xl transition-all duration-500 border border-transparent hover:border-brand-100">
+                        <img src="${perfume.imageUrl}" alt="${perfume.name}" class="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110" referrerPolicy="no-referrer">
+                        
+                        <!-- Overlay -->
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500"></div>
+                        
+                        <!-- Quick Action -->
+                        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 translate-y-12 group-hover:translate-y-0 transition-transform duration-500 ease-out w-full px-6">
+                            <button class="w-full bg-white/90 backdrop-blur-sm text-brand-900 py-3 rounded-xl uppercase tracking-widest text-[10px] font-bold hover:bg-brand-900 hover:text-white transition-all shadow-lg whitespace-nowrap border border-brand-100">
+                                Xem Chi Tiết
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center flex-grow flex flex-col justify-between w-full px-2">
+                        <div>
+                            <h3 class="font-serif text-xl text-brand-900 group-hover:text-brand-500 transition-colors duration-300 mb-1">${perfume.name}</h3>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-2">${category}</p>
+                            <span class="font-serif text-brand-900 text-lg italic">${perfume.price.toLocaleString('vi-VN')} VNĐ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Carousel Navigation Logic
+    const updateCarousel = () => {
+        const translateX = -(currentCollectionIndex * 100);
+        container.style.transform = `translateX(${translateX}%)`;
+
+        // Update button states
+        btnPrev.disabled = currentCollectionIndex === 0;
+        btnNext.disabled = currentCollectionIndex >= totalPages - 1;
+
+        // Opacity for disabled state
+        btnPrev.style.opacity = currentCollectionIndex === 0 ? '0.3' : '1';
+        btnNext.style.opacity = currentCollectionIndex >= totalPages - 1 ? '0.3' : '1';
+    };
+
+    // Remove existing event listeners to prevent duplicates if re-rendered
+    // Note: In this simple implementation, we assume renderLatestCollection is called once or we accept potential duplicates if init is called multiple times. 
+    // Ideally we should handle cleanup, but for now we'll just clone and replace or assume single init.
+    // A better way is to assign onclick handlers or use named functions, but let's stick to the current pattern and ensure we don't add listeners multiple times if possible.
+    // Since init() calls this, and init() is called once, it's fine.
+
+    // However, if we want to be safe against re-runs:
+    const newBtnPrev = btnPrev.cloneNode(true);
+    const newBtnNext = btnNext.cloneNode(true);
+    btnPrev.parentNode.replaceChild(newBtnPrev, btnPrev);
+    btnNext.parentNode.replaceChild(newBtnNext, btnNext);
+
+    newBtnPrev.addEventListener('click', () => {
+        if (currentCollectionIndex > 0) {
+            currentCollectionIndex--;
+            updateCarousel();
+        }
+    });
+
+    newBtnNext.addEventListener('click', () => {
+        if (currentCollectionIndex < totalPages - 1) {
+            currentCollectionIndex++;
+            updateCarousel();
+        }
+    });
+
+    // Initialize state
+    updateCarousel();
+}
+
 // Initialize
 function init() {
     setupEventListeners();
     updateUserUI();
+    renderLatestCollection();
     lucide.createIcons();
-    
+
     // Expose app to window for global access if needed
     window.app = {
         navigateTo
