@@ -15,7 +15,7 @@ const MOCK_PERFUMES = [
         id: 'p1',
         name: ' Cred Aventus',
         description: 'Sự pha trộn đầy quyền lực của trầm hương và gia vị dành cho người dẫn đầu táo bạo.',
-        price: 9999999,
+        price: 450000,
         imageUrl: 'https://down-vn.img.susercontent.com/file/vn-11134207-7ra0g-m7nypmyzapip33.webp',
         productUrl: 'https://s.shopee.vn/5fjgdjRDVq',
         notes: {
